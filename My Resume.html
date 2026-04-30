@@ -13,22 +13,24 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:    #0b1120;
-      --navy2:   #111827;
-      --navy3:   #1a2540;
+      --navy:    #030712;
+      --navy2:   #0b1120;
+      --navy3:   #111827;
       --gold:    #c9a84c;
       --gold2:   #e2c57a;
       --gold3:   #f5e4b0;
-      --cream:   #f8f3e8;
-      --muted:   #8a9ab5;
-      --border:  rgba(201,168,76,0.18);
-      --card:    rgba(26,37,64,0.6);
+      --cream:   #f9fafb;
+      --muted:   #9ca3af;
+      --border:  rgba(201, 168, 76, 0.2);
+      --card:    rgba(17, 24, 39, 0.4);
+      --glass:   rgba(255, 255, 255, 0.03);
       --serif:   'Cormorant Garamond', Georgia, serif;
       --sans:    'DM Sans', sans-serif;
-      --r:       12px;
+      --r:       16px;
+      --accent:  #d97706;
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; cursor: none; } /* Hide default cursor */
 
     body {
       background: var(--navy);
@@ -37,26 +39,65 @@
       font-size: 16px;
       line-height: 1.7;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(201,168,76,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(201,168,76,0.06) 0%, transparent 55%);
+    /* ── Animated Background ── */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: -1;
+      background-color: var(--navy);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(201, 168, 76, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(17, 24, 39, 0.3) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(201, 168, 76, 0.1) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(11, 17, 32, 0.5) 0px, transparent 50%);
+      filter: blur(80px);
+      animation: meshFlow 20s ease infinite alternate;
+    }
+    @keyframes meshFlow {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.1) translate(-2%, -2%); }
+    }
+
+    /* ── Custom Cursor ── */
+    .cursor-dot, .cursor-outline {
       pointer-events: none;
+      position: fixed;
+      top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 9999;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .cursor-dot {
+      width: 6px; height: 6px;
+      background-color: var(--gold);
+    }
+    .cursor-outline {
+      width: 30px; height: 30px;
+      border: 1px solid var(--gold);
+      transition: all 0.1s ease-out;
+    }
+    .cursor-hover {
+      transform: translate(-50%, -50%) scale(2);
+      background-color: rgba(201, 168, 76, 0.1);
+      border-color: transparent;
     }
 
     /* ── Nav ── */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 5vw;
-      height: 64px;
-      background: rgba(11,17,32,0.88);
-      backdrop-filter: blur(16px);
+      height: 72px;
+      background: rgba(3, 7, 18, 0.7);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+    nav.scrolled {
+      height: 60px;
+      background: rgba(3, 7, 18, 0.9);
     }
     .nav-logo {
       font-family: var(--serif);
@@ -136,10 +177,11 @@
     }
     .hero-desc {
       color: var(--muted);
-      font-size: 1rem;
-      max-width: 620px;
-      margin-bottom: 2.2rem;
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin-bottom: 2.8rem;
       line-height: 1.8;
+      font-weight: 300;
     }
     .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
     .btn-primary {
@@ -226,13 +268,26 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 28px;
-      backdrop-filter: blur(8px);
-      transition: border-color .25s, transform .25s;
-      opacity: 0; transform: translateY(24px);
+      padding: 32px;
+      backdrop-filter: blur(12px);
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      opacity: 0; transform: translateY(30px);
+      position: relative;
+      overflow: hidden;
     }
-    .skill-card.visible { animation: fadeUp .6s ease forwards; }
-    .skill-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+    .skill-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(201, 168, 76, 0.08), transparent 40%);
+      opacity: 0; transition: opacity 0.5s;
+    }
+    .skill-card:hover::after { opacity: 1; }
+    .skill-card.visible { animation: fadeUp 0.8s ease forwards; }
+    .skill-card:hover { 
+      border-color: var(--gold); 
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
     .skill-icon { font-size: 1.8rem; margin-bottom: 1rem; }
     .skill-title {
       font-family: var(--serif);
@@ -509,6 +564,10 @@
   </style>
 </head>
 <body>
+  <div class="bg-mesh"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-outline" id="cursorOutline"></div>
+
 
 <!-- NAV -->
 <nav>
@@ -789,6 +848,45 @@
   const nav = document.getElementById('navLinks');
   ham.addEventListener('click', () => nav.classList.toggle('open'));
   nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => nav.classList.remove('open')));
+
+  // Custom Cursor
+  const dot = document.getElementById('cursorDot');
+  const outline = document.getElementById('cursorOutline');
+  
+  window.addEventListener('mousemove', (e) => {
+    const { clientX, clientY } = e;
+    dot.style.transform = `translate(${clientX}px, ${clientY}px)`;
+    
+    // Smooth outline follow
+    outline.animate({
+      transform: `translate(${clientX}px, ${clientY}px)`
+    }, { duration: 500, fill: "forwards" });
+    
+    // Skill card spotlight effect
+    document.querySelectorAll('.skill-card').forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
+
+  // Cursor hover effect
+  document.querySelectorAll('a, button, .skill-card').forEach(el => {
+    el.addEventListener('mouseenter', () => outline.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => outline.classList.remove('cursor-hover'));
+  });
+
+  // Nav scroll effect
+  const navbar = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
 
   // Scroll animations
   const observer = new IntersectionObserver((entries) => {
